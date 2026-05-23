@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -52,10 +53,12 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
       if (data.token) {
         document.cookie = `authToken=${data.token}; path=/; max-age=86400; SameSite=Lax`
       }
+      toast.success("Welcome back! Sign in successful.")
       router.push("/dashboard")
     },
     onError: (error: Error) => {
       setErrors({ general: error.message })
+      toast.error(error.message || "Invalid email or password")
     },
   })
 

@@ -5,8 +5,10 @@ export function proxy(request: NextRequest) {
   const isLoggedIn = request.cookies.get("isLoggedIn")?.value === "true"
   const { pathname } = request.nextUrl
 
-  // Check if target path is dashboard or subpath
-  const isProtectedPath = pathname === "/dashboard" || pathname.startsWith("/dashboard/")
+  // Check if target path is dashboard, user management, or subpaths
+  const isProtectedPath =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/") ||
+    pathname === "/user" || pathname.startsWith("/user/")
 
   // 1. If unauthenticated trying to access a protected path, redirect to login
   if (isProtectedPath && !isLoggedIn) {
