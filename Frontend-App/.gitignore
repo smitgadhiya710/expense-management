@@ -1,0 +1,47 @@
+# Node dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production / Build outputs
+dist/
+build/
+out/
+web-build/
+
+# Expo (if using Expo for React Native)
+.expo/
+*.jks
+*.p8
+*.keystore
+*.mobileprovision
+
+# Android build outputs and caches (if using React Native CLI)
+android/app/build/
+android/build/
+android/.gradle/
+*.ap_
+*.apk
+*.aab
+
+# iOS build outputs and CocoaPods (if using React Native CLI)
+ios/Pods/
+ios/build/
+*.xcworkspace
+DerivedData/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor / IDE configuration caches
+.eslintcache
+.tsbuildinfo
