@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ConfirmationModal } from "@/components/ui/confirmation-modal"
 import { useQuery } from "@tanstack/react-query"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Helper to retrieve cookie token for authorization header
 function getAuthHeaders(): HeadersInit {
@@ -50,6 +51,20 @@ export default function ProtectedLayout({
   const [mounted, setMounted] = React.useState(false)
   const [isMobileOpen, setIsMobileOpen] = React.useState(false)
   const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = React.useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = React.useState(false)
+  const [isProfileDetailsOpen, setIsProfileDetailsOpen] = React.useState(false)
+
+  const dropdownRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   // Fetch current logged-in user profile once and cache it per session
   const { data: meData, isLoading: isMeLoading } = useQuery({
@@ -97,7 +112,7 @@ export default function ProtectedLayout({
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md">
             <Wallet className="h-4.5 w-4.5 text-white" />
           </div>
-          <span className="font-bold tracking-tight text-lg text-white">Expensify Admin</span>
+          <span className="font-bold tracking-tight text-lg text-foreground">Expensify Admin</span>
         </div>
 
         {/* Nav Links */}
@@ -111,8 +126,8 @@ export default function ProtectedLayout({
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all select-none ${
                   isActive
-                    ? "bg-white text-neutral-950 shadow-xs"
-                    : "text-neutral-400 hover:text-white hover:bg-white/5"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 <Icon className="h-4.5 w-4.5 shrink-0" />
@@ -124,36 +139,13 @@ export default function ProtectedLayout({
       </div>
 
       {/* User Footer / Log Out */}
-      <div className="border-t border-white/10 pt-4 mt-auto space-y-3">
-        <div className="flex items-center gap-3 px-2 py-1">
-          <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center border border-white/5">
-            <User className="h-4.5 w-4.5 text-neutral-300" />
-          </div>
-          <div className="min-w-0 flex-1">
-            {isMeLoading ? (
-              <div className="space-y-1.5 animate-pulse">
-                <div className="h-3.5 w-20 bg-white/20 rounded" />
-                <div className="h-2.5 w-28 bg-white/10 rounded" />
-              </div>
-            ) : (
-              <>
-                <p className="text-xs font-semibold text-white truncate">
-                  {meData?.user?.userName || "Administrator"}
-                </p>
-                <p className="text-[10px] text-neutral-400 truncate">
-                  {meData?.user?.email || "admin@example.com"}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-
+      <div className="border-t border-border pt-4 mt-auto">
         <Button
           variant="ghost"
           onClick={() => setIsSignOutConfirmOpen(true)}
-          className="w-full justify-start text-neutral-400 hover:text-white hover:bg-white/5 gap-3 h-10 px-3 cursor-pointer"
+          className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted gap-3 h-10 px-3 cursor-pointer"
         >
-          <LogOut className="h-4.5 w-4.5 text-neutral-400 group-hover:text-white" />
+          <LogOut className="h-4.5 w-4.5 text-muted-foreground group-hover/button:text-foreground" />
           Sign Out
         </Button>
       </div>
@@ -163,7 +155,7 @@ export default function ProtectedLayout({
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Desktop Sidebar (Pinned left) */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:bg-neutral-950 md:border-r md:border-white/10 md:z-30 md:p-6 select-none">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-card border-r border-border md:z-30 p-6 select-none transition-colors duration-300">
         <SidebarContent />
       </aside>
 
@@ -175,13 +167,13 @@ export default function ProtectedLayout({
         />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 w-72 bg-neutral-950 border-r border-white/10 z-50 p-6 flex flex-col justify-between transform transition-transform duration-300 ease-in-out md:hidden select-none ${
+        className={`fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 p-6 flex flex-col justify-between transform transition-transform duration-300 ease-in-out md:hidden select-none transition-colors duration-300 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <button
           onClick={() => setIsMobileOpen(false)}
-          className="absolute top-4 right-4 text-neutral-400 hover:text-white rounded-md p-1.5 bg-white/5 border border-white/10 cursor-pointer"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground rounded-md p-1.5 bg-muted border border-border cursor-pointer transition-colors"
           aria-label="Close sidebar"
         >
           <X className="h-4 w-4" />
@@ -207,21 +199,79 @@ export default function ProtectedLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
+            {/* Profile Dropdown */}
             {mounted && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                className="rounded-full h-9 w-9 border-border/50 bg-background/80 cursor-pointer shadow-xs active:scale-95 transition-all"
-                aria-label="Toggle theme"
-              >
-                {resolvedTheme === "dark" ? (
-                  <Sun className="h-4 w-4 text-yellow-400" />
-                ) : (
-                  <Moon className="h-4 w-4 text-slate-800" />
+              <div className="relative" ref={dropdownRef}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="rounded-full h-9 w-9 border-border/50 bg-background/80 cursor-pointer shadow-xs active:scale-95 transition-all"
+                  aria-label="User Profile Menu"
+                >
+                  <User className="h-4 w-4 text-muted-foreground" />
+                </Button>
+
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-xl z-50 animate-in fade-in-50 slide-in-from-top-1 duration-150 p-1">
+                    {/* User Profile Header */}
+                    <div className="px-3 py-2 border-b border-border/50">
+                      <p className="text-xs font-semibold text-foreground truncate">
+                        {meData?.user?.userName || "Administrator"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {meData?.user?.email || "admin@example.com"}
+                      </p>
+                    </div>
+
+                    <div className="py-1">
+                      {/* Option 1: Profile Details */}
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false)
+                          setIsProfileDetailsOpen(true)
+                        }}
+                        className="w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
+                      >
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        User Profile Details
+                      </button>
+
+                      {/* Option 2: Theme Selection */}
+                      <button
+                        onClick={() => {
+                          setTheme(resolvedTheme === "dark" ? "light" : "dark")
+                        }}
+                        className="w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          {resolvedTheme === "dark" ? (
+                            <Sun className="h-3.5 w-3.5 text-muted-foreground" />
+                          ) : (
+                            <Moon className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                          <span>Theme Selection</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground capitalize mr-1">
+                          {resolvedTheme}
+                        </span>
+                      </button>
+
+                      {/* Option 3: Sign Out */}
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false)
+                          setIsSignOutConfirmOpen(true)
+                        }}
+                        className="w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2 cursor-pointer"
+                      >
+                        <LogOut className="h-3.5 w-3.5 text-destructive" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </Button>
+              </div>
             )}
           </div>
         </header>
@@ -241,6 +291,50 @@ export default function ProtectedLayout({
         confirmText="Sign Out"
         variant="warning"
       />
+
+      {/* Profile Details Modal */}
+      {isProfileDetailsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs animate-in fade-in-0 duration-200"
+            onClick={() => setIsProfileDetailsOpen(false)}
+          />
+          <Card className="w-full max-w-sm relative z-10 border-border bg-card/95 backdrop-blur-xl shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
+            <button
+              onClick={() => setIsProfileDetailsOpen(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground rounded-md p-1.5 bg-muted/50 border border-border/50 cursor-pointer"
+              aria-label="Close profile details"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                Profile Details
+              </CardTitle>
+              <CardDescription>Your account security information.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3.5 text-sm">
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground">Username</span>
+                <span className="font-semibold text-foreground">{meData?.user?.userName || "N/A"}</span>
+              </div>
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground">Email</span>
+                <span className="font-semibold text-foreground">{meData?.user?.email || "N/A"}</span>
+              </div>
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground">Phone</span>
+                <span className="font-semibold text-foreground">{meData?.user?.phone || "N/A"}</span>
+              </div>
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground">Role</span>
+                <span className="font-semibold capitalize text-foreground">{meData?.user?.role || "N/A"}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

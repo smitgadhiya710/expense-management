@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import ApiError from '../utils/api-error.js';
 import { verifyToken } from '../utils/jwt.js';
 
-const auth = (req: Request, _res: Response, next: NextFunction): void => {
+const verifyTokenMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
   const header = req.headers.authorization;
   if (!header) {
     return next(new ApiError(401, 'authorization header is required'));
@@ -26,4 +26,4 @@ const auth = (req: Request, _res: Response, next: NextFunction): void => {
   }
 };
 
-export default auth;
+export default verifyTokenMiddleware;
