@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   User,
-  Users
+  Users,
+  Receipt
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -100,6 +101,7 @@ export default function ProtectedLayout({
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/user", label: "Users", icon: Users },
+    { href: "/expense-type", label: "Expense Types", icon: Receipt },
     { href: "#", label: "Policies", icon: FileText },
     { href: "#", label: "Settings", icon: Settings },
   ]

@@ -8,7 +8,8 @@ export function proxy(request: NextRequest) {
   // Check if target path is dashboard, user management, or subpaths
   const isProtectedPath =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/") ||
-    pathname === "/user" || pathname.startsWith("/user/")
+    pathname === "/user" || pathname.startsWith("/user/") ||
+    pathname === "/expense-type" || pathname.startsWith("/expense-type/")
 
   // 1. If unauthenticated trying to access a protected path, redirect to login
   if (isProtectedPath && !isLoggedIn) {
