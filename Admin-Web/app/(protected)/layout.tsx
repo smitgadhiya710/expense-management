@@ -101,6 +101,7 @@ export default function ProtectedLayout({
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/user", label: "Users", icon: Users },
+    { href: "/expense", label: "Expenses", icon: Wallet },
     { href: "/expense-type", label: "Expense Types", icon: Receipt },
     { href: "#", label: "Policies", icon: FileText },
     { href: "#", label: "Settings", icon: Settings },

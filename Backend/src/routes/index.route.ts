@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import authRoutes from './auth.route.js';
 import expenseTypeRoutes from './expense-type.route.js';
+import expenseRoutes from './expense.route.js';
 import profileRoutes from './profile.route.js';
 import userRoutes from './user.route.js';
 
@@ -15,6 +16,7 @@ const api = Router();
 
 api.use('/auth', authRoutes);
 api.use('/expense-types', expenseTypeRoutes);
+api.use('/expenses', expenseRoutes);
 api.use('/user', userRoutes);
 api.use('/profile', profileRoutes);
 

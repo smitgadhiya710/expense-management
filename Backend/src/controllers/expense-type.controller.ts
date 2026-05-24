@@ -14,6 +14,17 @@ const toKey = (value: string): string =>
 
 const toBoolean = (value: unknown): boolean => value === true || value === 'true';
 
+const getPagination = (req: Request): { page: number; limit: number; skip: number } => {
+  const page = Number(req.query.page || 1);
+  const limit = Math.min(Number(req.query.limit || 20), 100);
+
+  return {
+    page,
+    limit,
+    skip: (page - 1) * limit,
+  };
+};
+
 export const create = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const name = String(req.body.name).trim();
   const key = req.body.key ? toKey(String(req.body.key)) : toKey(name);
@@ -47,8 +58,29 @@ export const getAll = asyncHandler(async (req: Request, res: Response): Promise<
     filter.isActive = req.query.isActive === 'true';
   }
 
-  const expenseTypes = await ExpenseType.find(filter).sort({ name: 1 });
-  res.status(200).json({ expenseTypes: expenseTypes.map((expenseType) => expenseType.toPublicJSON()) });
+  if (req.query.page !== undefined || req.query.limit !== undefined) {
+    const { page, limit, skip } = getPagination(req);
+
+    const [expenseTypes, total] = await Promise.all([
+      ExpenseType.find(filter).sort({ name: 1 }).skip(skip).limit(limit),
+      ExpenseType.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      expenseTypes: expenseTypes.map((expenseType) => expenseType.toPublicJSON()),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } else {
+    const expenseTypes = await ExpenseType.find(filter).sort({ name: 1 });
+    res.status(200).json({
+      expenseTypes: expenseTypes.map((expenseType) => expenseType.toPublicJSON()),
+    });
+  }
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response): Promise<void> => {

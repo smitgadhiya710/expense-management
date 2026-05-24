@@ -5,9 +5,41 @@ import User from '../models/user.model.js';
 import ApiError from '../utils/api-error.js';
 import asyncHandler from '../utils/async-handler.js';
 
-export const getAll = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
-  const users = await User.find({}).sort({ createdAt: -1 });
-  res.status(200).json({ users: users.map((user) => user.toPublicJSON()) });
+const getPagination = (req: Request): { page: number; limit: number; skip: number } => {
+  const page = Number(req.query.page || 1);
+  const limit = Math.min(Number(req.query.limit || 20), 100);
+
+  return {
+    page,
+    limit,
+    skip: (page - 1) * limit,
+  };
+};
+
+export const getAll = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  if (req.query.page !== undefined || req.query.limit !== undefined) {
+    const { page, limit, skip } = getPagination(req);
+
+    const [users, total] = await Promise.all([
+      User.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      User.countDocuments({}),
+    ]);
+
+    res.status(200).json({
+      users: users.map((user) => user.toPublicJSON()),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } else {
+    const users = await User.find({}).sort({ createdAt: -1 });
+    res.status(200).json({
+      users: users.map((user) => user.toPublicJSON()),
+    });
+  }
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response): Promise<void> => {

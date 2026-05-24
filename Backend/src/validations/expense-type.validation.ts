@@ -14,7 +14,12 @@ export const create = [
   validate,
 ];
 
-export const list = [query('isActive').optional().isBoolean(), validate];
+export const list = [
+  query('isActive').optional().isBoolean(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  validate,
+];
 
 export const update = [
   param('id').isMongoId(),

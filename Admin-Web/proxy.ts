@@ -9,7 +9,8 @@ export function proxy(request: NextRequest) {
   const isProtectedPath =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/") ||
     pathname === "/user" || pathname.startsWith("/user/") ||
-    pathname === "/expense-type" || pathname.startsWith("/expense-type/")
+    pathname === "/expense-type" || pathname.startsWith("/expense-type/") ||
+    pathname === "/expense" || pathname.startsWith("/expense/")
 
   // 1. If unauthenticated trying to access a protected path, redirect to login
   if (isProtectedPath && !isLoggedIn) {

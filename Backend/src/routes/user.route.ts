@@ -10,7 +10,7 @@ const router = Router();
 router.use(verifyTokenMiddleware);
 
 router.get('/me', authController.me);
-router.get('/', userController.getAll);
+router.get('/', userValidation.list, userController.getAll);
 router.get('/:id', userValidation.mongoIdParam, userController.getById);
 router.put('/:id', userValidation.update, userController.update);
 router.delete('/:id', userValidation.mongoIdParam, userController.remove);

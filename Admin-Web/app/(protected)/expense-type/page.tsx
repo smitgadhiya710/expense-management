@@ -70,6 +70,9 @@ export default function ExpenseTypeManagementPage() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false)
   const [recordToDelete, setRecordToDelete] = React.useState<ExpenseTypeRecord | null>(null)
 
+  const [page, setPage] = React.useState(1)
+  const [limit, setLimit] = React.useState(10)
+
   // Add Form States
   const [addName, setAddName] = React.useState("")
   const [addKey, setAddKey] = React.useState("")
@@ -88,16 +91,16 @@ export default function ExpenseTypeManagementPage() {
 
   // 1. Fetch all expense types
   const { data: expenseTypesData, isLoading: isListLoading, refetch } = useQuery({
-    queryKey: ["expense-types"],
+    queryKey: ["expense-types", page, limit],
     queryFn: async () => {
-      const response = await fetch("/api/v1/expense-types", {
+      const response = await fetch(`/api/v1/expense-types?page=${page}&limit=${limit}`, {
         headers: getAuthHeaders(),
       })
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || "Failed to fetch expense types")
       }
-      return response.json() // Expecting { expenseTypes: [...] }
+      return response.json() // Expecting { expenseTypes: [...], pagination: {...} }
     },
   })
 
@@ -302,7 +305,15 @@ export default function ExpenseTypeManagementPage() {
     }
   }
 
+  interface PaginationDetails {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+
   const expenseTypes = expenseTypesData?.expenseTypes || []
+  const pagination: PaginationDetails = expenseTypesData?.pagination || { page: 1, limit: 20, total: 0, pages: 1 }
   const isActionPending = createMutation.isPending || editMutation.isPending || deleteMutation.isPending
 
   return (
@@ -417,6 +428,66 @@ export default function ExpenseTypeManagementPage() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {pagination.pages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 border-t border-border/40 bg-card/10 select-none">
+                <div className="flex items-center gap-4">
+                  <p className="text-xs text-muted-foreground">
+                    Showing page <span className="font-semibold text-foreground">{pagination.page}</span> of <span className="font-semibold text-foreground">{pagination.pages}</span> ({pagination.total} total items)
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>Show</span>
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value))
+                        setPage(1)
+                      }}
+                      className="h-7 rounded border border-border bg-card text-[11px] px-1.5 cursor-pointer focus:outline-none"
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <span>per page</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs cursor-pointer"
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={page === 1 || isListLoading}
+                  >
+                    Previous
+                  </Button>
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((idx) => (
+                    <Button
+                      key={idx}
+                      variant={idx === page ? "default" : "outline"}
+                      size="icon"
+                      className="h-8 w-8 text-xs cursor-pointer"
+                      onClick={() => setPage(idx)}
+                      disabled={isListLoading}
+                    >
+                      {idx}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs cursor-pointer"
+                    onClick={() => setPage((prev) => Math.min(prev + 1, pagination.pages))}
+                    disabled={page === pagination.pages || isListLoading}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
