@@ -84,6 +84,14 @@ export default function UserManagementPage() {
   const [editRole, setEditRole] = React.useState("user")
   const [editErrors, setEditErrors] = React.useState<{ [key: string]: string }>({})
 
+  // Fetch Current Logged-in User (uses Infinity cache from layout.tsx)
+  const { data: meData } = useQuery<{ user: { role: string } }>({
+    queryKey: ["currentUser"],
+    staleTime: Infinity,
+  })
+
+  const isAdminRole = meData?.user?.role === "admin"
+
   // 1. Fetch all users from database via GET /api/v1/user
   const { data: usersData, isLoading: isUsersLoading, refetch } = useQuery({
     queryKey: ["users", page, limit],
@@ -305,16 +313,18 @@ export default function UserManagementPage() {
         </div>
         
         {/* New User Button */}
-        <Button 
-          onClick={() => {
-            setAddErrors({})
-            setIsAddOpen(true)
-          }} 
-          className="gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer self-start sm:self-center"
-        >
-          <Plus className="h-4.5 w-4.5" />
-          New User
-        </Button>
+        {isAdminRole && (
+          <Button 
+            onClick={() => {
+              setAddErrors({})
+              setIsAddOpen(true)
+            }} 
+            className="gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer self-start sm:self-center"
+          >
+            <Plus className="h-4.5 w-4.5" />
+            New User
+          </Button>
+        )}
       </div>
 
       {/* Loading Spinner for initial page load */}
@@ -375,28 +385,30 @@ export default function UserManagementPage() {
                           </span>
                         </td>
                         <td className="py-3.5 text-right pr-6">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditModal(user)}
-                              disabled={isActionLoading}
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
-                              aria-label={`Edit ${user.userName}`}
-                            >
-                              <Edit2 className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteUserClick(user)}
-                              disabled={isActionLoading}
-                              className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                              aria-label={`Delete ${user.userName}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
+                          {isAdminRole && (
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEditModal(user)}
+                                disabled={isActionLoading}
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                                aria-label={`Edit ${user.userName}`}
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteUserClick(user)}
+                                disabled={isActionLoading}
+                                className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                                aria-label={`Delete ${user.userName}`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          )}
                         </td>
                       </TableRow>
                     ))
